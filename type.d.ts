@@ -7,7 +7,7 @@ export interface FastDefinition {
 
 export interface Apa {
   hw: string;
-  prs?: string[];
+  prs?: { ipa: string; sound?: string }[];
   altprs?: string[];
 }
 
@@ -20,7 +20,7 @@ export interface CleanFuncReturn {
 export type PronunciationEntry = {
   hwi?: {
     hw?: string;
-    prs?: { ipa: string }[];
+    prs?: { ipa: string, sound: string }[];
     altprs?: { ipa: string }[];
   };
 };

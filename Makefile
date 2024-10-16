@@ -6,7 +6,7 @@ BLUE = \033[34m
 RED = \033[31m
 
 # Define project constants
-DENO_FLAGS = --allow-net --allow-read --allow-env --unstable-sloppy-imports
+DENO_FLAGS = task dev
 LOCK_FILE = deno.lock
 DEPS_FILE = deps.ts
 # Settings for testing dict func
@@ -23,6 +23,7 @@ help:
 	@echo -e "  ${GREEN}make cache${RESET}         - Cache and lock dependencies"
 	@echo -e "  ${GREEN}make check${RESET}         - Check for errors (lint + fmt check)"
 	@echo -e "  ${GREEN}make clean${RESET}         - Clean Deno cache"
+	@echo -e "  ${GREEN}make test${RESET}           - Test the functionality of dictionary"
 
 # Target to run the project
 .PHONY: run

@@ -4,6 +4,8 @@ import type {
   FastDefinition,
   PronunciationEntry,
 } from "../type.d.ts";
+import { DummyData } from "./data.ts";
+import { killData } from "./kill.ts";
 import { Println } from "./print.ts";
 
 /**
@@ -66,6 +68,10 @@ export class WordDictionary {
    * @param {string} word - The word to search for in the dataset.
    * @returns {Apa[] | undefined} An array of Apa objects or `undefined` if no matches are found.
    */
+  // "hwi": {
+  //   "hw": "kill",
+  //   "prs": [{ "ipa": "ˈkɪl", "sound": { "audio": "kill0001" } }],
+  // }
   public GetAPA(word: string): Apa[] | undefined {
     const results: Apa[] = [];
 
@@ -78,7 +84,10 @@ export class WordDictionary {
 
         results.push({
           hw,
-          prs: prs?.map((p) => p.ipa),
+          prs: prs?.map((p) => ({
+            ipa: p.ipa,
+            sound: p.sound,
+          })),
           altprs: altprs?.map((p) => p.ipa),
         });
       }
@@ -103,14 +112,18 @@ export class WordDictionary {
       throw new Error(`No ${title.toLowerCase()} found.`);
     }
   }
+
+  // TODO: func that returns array of definitions only
+
+  // TODO(complicated): function gets examples 
 }
 
 // Example usage
-// const extractor = new WordDictionary(killData.data);
+// const extractor = new WordDictionary(DummyData.data);
 
 // // Extract definitions and APA for the word "kill"
-// const definitions = extractor.GetFastDefinitions("kill");
-// const apa = extractor.GetAPA("kill");
+// const definitions = extractor.GetFastDefinitions("mock");
+// const apa = extractor.GetAPA("mock");
 
 // // Print results
 // extractor.PrintResults("Definition", definitions);

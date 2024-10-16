@@ -1,6 +1,6 @@
 {
   "name": "MWD",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A REST API built with Deno 2.0 to clean the dataset of the Merriam-Webster dictionary.",
   "compilerOptions": {
     "lib": ["dom", "esnext", "deno.ns", "deno.unstable"],

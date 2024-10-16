@@ -60,7 +60,7 @@ export const killData = {
             "{bc}to cause the death of (a person, animal, or plant) {bc}to end the life of (someone or something) ",
           ],
           ["wsgram", "+ obj"],
-          ["vis", [
+          ["vis", [ // NOTE: Verbal Illustrations
             { "t": "This poison {it}kills{/it} rats." },
             { "t": "The disease has {it}killed{/it} thousands of people." },
             { "t": "Three people were {it}killed{/it} in the accident." },
@@ -74,7 +74,7 @@ export const killData = {
                 "If he keeps working this hard, he's going to {it}kill himself{/it}. [=he's going to have health problems that cause his death]",
             },
           ]],
-          ["uns", [[["text", "often used figuratively "], ["vis", [{
+          ["uns", [[["text", "often used figuratively "], ["vis", [{ // NOTE: Usage Notes
             "t":
               "My father will {it}kill{/it} me [=he will be very angry] when he finds out that I dented the car.",
           }, {
