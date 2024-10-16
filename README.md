@@ -33,23 +33,26 @@ Before running the project, ensure you set the following environment variables:
 git clone https://github.com/Abdogouhmad/MWD
 cd mwd
 ```
+
 2. Install dependencies (if applicable):
 
 ```bash
 deno run --allow-net --allow-env your_script.ts
 ```
-###  Running the API
+
+### Running the API
 
 ```bash
 deno run --allow-net --allow-env server.ts
 ```
+
 ## API Endpoints
 
 ### GET /define/:word
 
 - Fetch definitions and pronunciations for a specified word.
   - Parameters
-        - word: The word to be searched for in the Merriam-Webster dictionary.
+    - word: The word to be searched for in the Merriam-Webster dictionary.
   - Responses
-        - 200 OK: Returns a JSON object containing definitions and pronunciations.
-        - 500 Internal Server Error: If the API fails to fetch data.
+    - 200 OK: Returns a JSON object containing definitions and pronunciations.
+      - 500 Internal Server Error: If the API fails to fetch data.
