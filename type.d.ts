@@ -1,21 +1,31 @@
-// Define interfaces for FastDefinition and Apa
-export interface FastDefinition {
-  hw: string;
-  fl: string;
-  def: string[];
-  hwi: Apa
+interface ShortDefType {
+  hw: string; // headword
+  fl: string; // functional label (part of speech)
+  def: string[]; // definitions
 }
 
-export interface Apa {
-  hw: string;
-  prs?: { ipa: string; sound?: string }[];
-  altprs?: string[];
+interface MetaType {
+  stems?: string[];
+  "app-shortdef": ShortDefType;
 }
+
+// APA type data
+interface ApaType {
+  hw: string;
+  prs?: { ipa: string; sound?: { audio?: string } }[]; // sound is an object with audio
+  altprs?: { ipa: string }[]; // alternative pronunciation, optional
+}
+
+interface MWDTYPE {
+  meta: MetaType;
+  hwi: ApaType;
+}
+
 
 // Define the return type for the clean function
 export interface CleanFuncReturn {
-  DEFINE: FastDefinition[] | undefined;
-  APA: Apa[] | undefined;
+  DEFINE: MetaType[] | undefined;
+  APA: ApaType[] | undefined;
 }
 
 export type PronunciationEntry = {
@@ -26,11 +36,6 @@ export type PronunciationEntry = {
   };
 };
 
-export type DefineMeta = {
-  meta?: {
-    "app-shortdef"?: FastDefinition;
-  };
-};
 
 
 // Meta type

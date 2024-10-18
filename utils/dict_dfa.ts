@@ -1,72 +1,175 @@
-import { DefineMeta } from "../type";
+import { ApaType, MetaType, MWDTYPE, ShortDefType } from "../type.d.ts";
+import { killData } from "./kill.ts";
 
-export class DFA {
-  private startState: string;
-  private acceptState: string;
+export class DictionaryDFA {
+  // DFA States as constants
+  private readonly START = "start";
+  private readonly CHECK_META = "check_meta";
+  private readonly CHECK_APP_SHORTDEF = "check_app_shortdef";
+  private readonly CHECK_HWI = "check_hwi";
+  private readonly CHECK_PRONUNCIATION = "check_pronunciation";
+  private readonly ACCEPT = "accept";
+
+  private currentState: string;
+  private word: string;
 
   constructor() {
-    this.startState = 'start';
-    this.acceptState = 'accept';
+    this.currentState = this.START;
+    this.word = "";
   }
 
-  public accepts(input: string[]): boolean {
-    let currentState = this.startState;
+  private resetState() {
+    this.currentState = this.START;
+  }
 
-    for (const symbol of input) {
-      switch (currentState) {
-        case 'start':
-          if (symbol === 'hw') {
-            currentState = 'hwappShort';
-          } else {
-            console.log('Failed at start: invalid symbol', symbol);
-            return false; // Invalid input
-          }
-          break;
+  private validateShortDef(shortDef: ShortDefType): boolean {
+    return (
+      typeof shortDef.hw === "string" &&
+      typeof shortDef.fl === "string" &&
+      Array.isArray(shortDef.def)
+    );
+  }
 
-        case 'hwappShort':
-          // Skip 'src', directly go to 'fl'
-          if (symbol === 'fl') {
-            currentState = 'flappShort';
-          } else {
-            console.log('Failed at hwappShort: invalid symbol', symbol);
-            return false; // Invalid input
-          }
-          break;
+  private validatePronunciation(hwi: ApaType): boolean {
+    // Check if at least one pronunciation type exists
+    if (!hwi.prs && !hwi.altprs) {
+      return false;
+    }
 
-        case 'flappShort':
-          if (symbol === 'def') {
-            currentState = this.acceptState;
-          } else {
-            console.log('Failed at flappShort: invalid symbol', symbol);
+    // Validate prs if it exists
+    if (hwi.prs) {
+      const prsValid = hwi.prs.every(p =>
+        typeof p.ipa === "string" &&
+        (!p.sound || typeof p.sound.audio === "string")
+      );
+      if (prsValid) return true;
+    }
+
+    // Validate altprs if it exists
+    if (hwi.altprs) {
+      return hwi.altprs.every(p => typeof p.ipa === "string");
+    }
+
+    return false;
+  }
+
+  public processEntry(entry: MWDTYPE, searchWord: string): boolean {
+    this.word = searchWord.toLowerCase();
+    this.resetState();
+
+    while (this.currentState !== this.ACCEPT) {
+      switch (this.currentState) {
+        case this.START:
+          if (!entry.meta) {
             return false;
           }
+          this.currentState = this.CHECK_META;
           break;
 
-        case this.acceptState:
-          return false; // Already in accept state
+        case this.CHECK_META:
+          // Stems are optional, so we only check if they exist
+          if (entry.meta.stems && !Array.isArray(entry.meta.stems)) {
+            return false;
+          }
+          this.currentState = this.CHECK_APP_SHORTDEF;
+          break;
+
+        case this.CHECK_APP_SHORTDEF:
+          if (!entry.meta["app-shortdef"] ||
+            !this.validateShortDef(entry.meta["app-shortdef"])) {
+            return false;
+          }
+
+          // Check if the word matches
+          const hw = entry.meta["app-shortdef"].hw.toLowerCase();
+          const baseWord = hw.split(':')[0]; // Handle cases like "mock:1"
+          if (baseWord !== this.word) {
+            return false;
+          }
+
+          this.currentState = this.CHECK_HWI;
+          break;
+
+        case this.CHECK_HWI:
+          if (!entry.hwi || typeof entry.hwi.hw !== "string") {
+            return false;
+          }
+          this.currentState = this.CHECK_PRONUNCIATION;
+          break;
+
+        case this.CHECK_PRONUNCIATION:
+          if (!this.validatePronunciation(entry.hwi)) {
+            return false;
+          }
+          this.currentState = this.ACCEPT;
+          break;
 
         default:
-          console.log('Failed: reached default case');
-          return false; // Invalid state
+          return false;
       }
     }
 
-    return currentState === this.acceptState; // Accept if in accept state
+    return true;
+  }
+  private createStrictMWDType(entry: MWDTYPE): MWDTYPE {
+    const strictMetaType: MetaType = {
+      stems: entry.meta.stems,
+      "app-shortdef": {
+        hw: entry.meta["app-shortdef"].hw,
+        fl: entry.meta["app-shortdef"].fl,
+        def: entry.meta["app-shortdef"].def
+      }
+    };
+
+    const strictApaType: ApaType = {
+      hw: entry.hwi.hw
+    };
+
+    // Only add prs if it exists
+    if (entry.hwi.prs) {
+      strictApaType.prs = entry.hwi.prs.map(p => ({
+        ipa: p.ipa,
+        ...(p.sound ? { sound: { audio: p.sound.audio } } : {})
+      }));
+    }
+
+    // Only add altprs if it exists
+    if (entry.hwi.altprs) {
+      strictApaType.altprs = entry.hwi.altprs.map(p => ({
+        ipa: p.ipa
+      }));
+    }
+
+    return {
+      meta: strictMetaType,
+      hwi: strictApaType,
+    };
   }
 
-  public contains(entry: DefineMeta, input: string[], word: string): boolean {
-    // Check if the 'id' contains the word (e.g., 'kill') and if app-shortdef exists
-    if (!entry.meta || !entry.meta["app-shortdef"]) {
-      console.log(`Skipping entry without app-shortdef.`);
-      return false;
-    }
-
-    if (!entry.meta["app-shortdef"].hw.includes(word)) {
-      console.log(`Skipping entry with hw: ${entry.meta["app-shortdef"].hw}, does not contain word: ${word}`);
-      return false;
-    }
-
-    console.log(`Processing entry with hw: ${entry.meta["app-shortdef"].hw}`);
-    return this.accepts(input); // Run the DFA
+  public processEntries(entries: MWDTYPE[], word: string): MWDTYPE[] {
+    return entries
+      .filter(entry => this.processEntry(entry, word))
+      .map(entry => this.createStrictMWDType(entry));
   }
 }
+
+// Example usage:
+const dfa = new DictionaryDFA();
+
+// Process all entries for a specific word
+const searchWord = "kill";
+const results = dfa.processEntries(killData.data, searchWord);
+
+// Print results
+// results.forEach(entry => {
+//   console.log(`Found entry: ${entry.meta["app-shortdef"].hw}`);
+//   console.log(`Part of speech: ${entry.meta["app-shortdef"].fl}`);
+//   console.log(`Definitions: ${entry.meta["app-shortdef"].def.join('\n- ')}\n`);
+// });
+
+console.log(results)
+// Or process single entries
+// killData.data.forEach(entry => {
+//   const result = dfa.processEntry(entry, searchWord);
+//   console.log(`Entry ${entry.meta["app-shortdef"].hw} matches: ${result}`);
+// });

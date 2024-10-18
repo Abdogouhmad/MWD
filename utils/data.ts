@@ -17,7 +17,7 @@ export const DummyData = {
           ],
         },
       },
-      hwi: { hw: "mock", prs: [{ ipa: "ˈmɑːk" }] },
+      hwi: { hw: "mock", prs: [{ ipa: "ˈmɑːk", "sound": { "audio": "kill0001" } }] },
       fl: "verb",
       def: [
         {
