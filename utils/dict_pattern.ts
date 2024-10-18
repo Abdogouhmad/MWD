@@ -4,9 +4,10 @@ import type {
   FastDefinition,
   PronunciationEntry,
 } from "../type.d.ts";
-import { DummyData } from "./data.ts";
-import { killData } from "./kill.ts";
 import { Println } from "./print.ts";
+import { DFA } from "./dict_dfa.ts";
+import { fakeData } from "./fake.ts"; // fake data
+import { killData } from "./kill.ts"; // dummy data
 
 /**
  * Class to extract definitions and pronunciation (APA) data from a dataset.
@@ -16,6 +17,7 @@ import { Println } from "./print.ts";
  */
 export class WordDictionary {
   private data: object[];
+  private dfa: DFA;
 
   /**
    * Creates a new instance of WordExtractor.
@@ -24,6 +26,7 @@ export class WordDictionary {
    */
   constructor(data: object[]) {
     this.data = data;
+    this.dfa = new DFA();
   }
 
   /**
@@ -36,26 +39,29 @@ export class WordDictionary {
    * @param {string} word - The word to search for in the dataset.
    * @returns {FastDefinition[] | undefined} An array of FastDefinition objects or `undefined` if no matches are found.
    */
-  public GetFastDefinitions(word: string): FastDefinition[] | undefined {
+  public GetFastDefinitions(word: string): FastDefinition[] {
     const results: FastDefinition[] = [];
 
     for (let i = 0; i < this.data.length; i++) {
       const entry = this.data[i] as DefineMeta;
+      const input = ['hw', 'def'];
 
-      if (
-        entry.meta &&
-        entry.meta["app-shortdef"] &&
-        entry.meta["app-shortdef"].hw &&
-        entry.meta["app-shortdef"].hw.includes(word)
-      ) {
-        const { hw, fl, def } = entry.meta["app-shortdef"];
-        if (hw && fl && def) {
-          results.push({ hw, fl, def });
+      // check the input using DFA
+      if (this.dfa.contains(entry, input, word)) {
+        if (entry.meta && entry.meta["app-shortdef"]) {
+          const { hw, fl, def } = entry.meta["app-shortdef"];
+          if (hw && fl && def) {
+            results.push({ hw, fl, def });
+          }
         }
       }
     }
 
-    return results.length > 0 ? results : undefined;
+    if (results.length === 0) {
+      throw new Error(`No definitions found for the word "${word}".`); // Throw an error if no results
+    }
+
+    return results; // Return the results
   }
 
   /**
@@ -119,12 +125,13 @@ export class WordDictionary {
 }
 
 // Example usage
-// const extractor = new WordDictionary(DummyData.data);
+const extractor = new WordDictionary(killData.data);
 
 // // Extract definitions and APA for the word "kill"
-// const definitions = extractor.GetFastDefinitions("mock");
+const definitions = extractor.GetFastDefinitions("kill");
 // const apa = extractor.GetAPA("mock");
 
 // // Print results
-// extractor.PrintResults("Definition", definitions);
+extractor.PrintResults("Definition", definitions);
+// console.log("Definition", definitions);
 // extractor.PrintResults("APA", apa);

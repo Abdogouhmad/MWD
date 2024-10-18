@@ -13,6 +13,7 @@ DEPS_FILE = deps.ts
 DENO_DANGEROUS_FLAG = -A
 DICT_PATH=./utils
 DICT_FILE=dict_pattern.ts
+DFA=dict_dfa.ts
 # Default target: Show available commands
 .PHONY: help
 help:
@@ -70,4 +71,9 @@ test:
 	@echo -e "${YELLOW}Testing Dictionary funcs${RESET}"
 	@echo ""
 	@deno run ${DENO_DANGEROUS_FLAG} "${DICT_PATH}/${DICT_FILE}"
+.PHONY: dfa
+dfa:
+	@echo -e "${YELLOW}Testing Dictionary funcs${RESET}"
+	@echo ""
+	@deno run ${DENO_DANGEROUS_FLAG} "${DICT_PATH}/${DFA}"
 
