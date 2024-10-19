@@ -1,137 +1,115 @@
-import type {
-  Apa,
-  DefineMeta,
-  FastDefinition,
-  PronunciationEntry,
-} from "../type.d.ts";
+import type { ApaType, CombinedResult, MetaType, MWDTYPE } from "../types.d.ts";
 import { Println } from "./print.ts";
-import { DFA } from "./dict_dfa.ts";
-import { fakeData } from "./fake.ts"; // fake data
-import { killData } from "./kill.ts"; // dummy data
+import { mwdDFA } from "./dict_dfa.ts";
+//import { killData } from "./kill.ts"; // dummy data
 
-/**
- * Class to extract definitions and pronunciation (APA) data from a dataset.
- *
- * This class provides methods to search and retrieve word-related data, such as definitions and pronunciation (APA),
- * from a dataset. It can handle any word matching within the dataset, and print results as needed.
- */
 export class WordDictionary {
-  private data: object[];
-  private dfa: DFA;
+  private data: MWDTYPE[];
+  private dfa: mwdDFA;
 
-  /**
-   * Creates a new instance of WordExtractor.
-   *
-   * @param {object[]} data - The dataset from which to extract word data.
-   */
-  constructor(data: object[]) {
+  constructor(data: MWDTYPE[]) {
     this.data = data;
-    this.dfa = new DFA();
+    this.dfa = new mwdDFA();
   }
 
   /**
-   * Extracts definitions (FastDefinitions) for a specific word.
-   *
-   * This method searches the dataset for entries containing a `meta["app-shortdef"]` field
-   * that includes the specified word. It extracts the headword (`hw`), functional label (`fl`),
-   * and definition list (`def`) for each matching entry.
+   * Extracts both definitions and APA (pronunciation) data for a specific word.
    *
    * @param {string} word - The word to search for in the dataset.
-   * @returns {FastDefinition[] | undefined} An array of FastDefinition objects or `undefined` if no matches are found.
+   * @returns {CombinedResult[]} - An array of objects containing both definitions and pronunciations.
    */
-  public GetFastDefinitions(word: string): FastDefinition[] {
-    const results: FastDefinition[] = [];
+  public GetWordData(word: string): CombinedResult[] {
+    const results: CombinedResult[] = [];
 
-    for (let i = 0; i < this.data.length; i++) {
-      const entry = this.data[i] as DefineMeta;
-      const input = ['hw', 'def'];
+    // Pass the entire data array to the DFA's contains method
+    if (this.dfa.contains(this.data, word)) {
+      for (let i = 0; i < this.data.length; i++) {
+        const entry = this.data[i];
 
-      // check the input using DFA
-      if (this.dfa.contains(entry, input, word)) {
-        if (entry.meta && entry.meta["app-shortdef"]) {
-          const { hw, fl, def } = entry.meta["app-shortdef"];
-          if (hw && fl && def) {
-            results.push({ hw, fl, def });
+        if (
+          entry.meta?.["app-shortdef"]?.hw
+            .toLowerCase()
+            .includes(word.toLowerCase())
+        ) {
+          // Extract definitions
+          const definition = this.extractDefinition(entry.meta);
+
+          // Extract APA data
+          const apa = this.extractAPA(entry.hwi);
+
+          if (definition || apa) {
+            results.push({ definition, apa });
           }
         }
       }
+    } else {
+      throw new Error(`No data found for the word "${word}".`);
     }
 
-    if (results.length === 0) {
-      throw new Error(`No definitions found for the word "${word}".`); // Throw an error if no results
-    }
-
-    return results; // Return the results
+    return results;
   }
 
   /**
-   * Extracts pronunciation (APA) data for a specific word.
+   * Extracts the definition from a specific MetaType entry.
    *
-   * This method searches the dataset for entries containing a `hwi` (headword information) field
-   * that includes the specified word. It extracts the headword (`hw`), pronunciations (`prs`),
-   * and alternative pronunciations (`altprs`) if available.
-   *
-   * @param {string} word - The word to search for in the dataset.
-   * @returns {Apa[] | undefined} An array of Apa objects or `undefined` if no matches are found.
+   * @param {MetaType} meta - The dataset entry's meta object.
+   * @returns {MetaType | undefined} The extracted definition, or undefined if not found.
    */
-  // "hwi": {
-  //   "hw": "kill",
-  //   "prs": [{ "ipa": "ˈkɪl", "sound": { "audio": "kill0001" } }],
-  // }
-  public GetAPA(word: string): Apa[] | undefined {
-    const results: Apa[] = [];
-
-    for (let i = 0; i < this.data.length; i++) {
-      const entry = this.data[i] as PronunciationEntry;
-
-      const hwi = entry.hwi;
-      if (hwi && hwi.hw && hwi.hw.includes(word)) {
-        const { hw, prs, altprs } = hwi;
-
-        results.push({
-          hw,
-          prs: prs?.map((p) => ({
-            ipa: p.ipa,
-            sound: p.sound,
-          })),
-          altprs: altprs?.map((p) => p.ipa),
-        });
+  private extractDefinition(meta: MetaType): MetaType | undefined {
+    if (meta && meta["app-shortdef"]) {
+      const { hw, fl, def } = meta["app-shortdef"]; // Destructuring the ShortDefType
+      if (hw && fl && def.length > 0) {
+        return {
+          "app-shortdef": { hw, fl, def },
+          stems: meta.stems,
+        };
       }
     }
-
-    return results.length > 0 ? results : undefined;
+    return undefined;
   }
 
   /**
-   * Prints the results of an extracted word-related data (such as definitions or APA).
+   * Extracts the APA (pronunciation) data from a specific ApaType entry.
    *
-   * This method checks if the provided data is non-empty and prints the results.
-   * If no data is found, it logs an error message.
-   *
-   * @param {string} title - A descriptive title for the type of data being printed (e.g., "Definition" or "APA").
-   * @param {object[] | undefined} data - The extracted data to be printed.
+   * @param {ApaType} hwi - The dataset entry's hwi object.
+   * @returns {ApaType | undefined} The extracted APA data, or undefined if not found.
    */
-  public PrintResults(title: string, data: object[] | undefined): void {
-    if (data && data.length > 0) {
-      Println(`<r>${title}:</>`, data);
-    } else {
-      throw new Error(`No ${title.toLowerCase()} found.`);
+  private extractAPA(hwi: ApaType): ApaType | undefined {
+    if (hwi && hwi.hw) {
+      return {
+        hw: hwi.hw,
+        prs: hwi.prs?.map((p) => ({
+          ipa: p.ipa,
+          sound: p.sound,
+        })),
+        altprs: hwi.altprs?.map((p) => ({
+          ipa: p.ipa,
+        })),
+      };
     }
+    return undefined;
   }
 
-  // TODO: func that returns array of definitions only
-
-  // TODO(complicated): function gets examples 
+  /**
+   * Prints the combined results of both definitions and APA.
+   *
+   * @param {string} word - The word being printed.
+   * @param {CombinedResult[]} data - The combined result data (definitions and APA).
+   */
+  public PrintCombinedResults(word: string, data: CombinedResult[]): void {
+    if (data.length > 0) {
+      Println(`<r>Results for "${word}":</>`, data);
+    } else {
+      throw new Error(`No results found for the word "${word}".`);
+    }
+  }
 }
 
 // Example usage
-const extractor = new WordDictionary(killData.data);
+// const extractor = new WordDictionary(killData.data);
 
-// // Extract definitions and APA for the word "kill"
-const definitions = extractor.GetFastDefinitions("kill");
-// const apa = extractor.GetAPA("mock");
+// // Extract combined definitions and APA for the word "kill"
+// const combinedData = extractor.GetWordData("kill");
 
-// // Print results
-extractor.PrintResults("Definition", definitions);
-// console.log("Definition", definitions);
-// extractor.PrintResults("APA", apa);
+// // Print combined results
+// extractor.PrintCombinedResults("kill", combinedData);

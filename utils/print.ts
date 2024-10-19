@@ -1,8 +1,6 @@
-import type { Apa, FastDefinition } from "../type.d.ts";
+import type { MWDTYPE } from "../types.d.ts";
 
-export function Println(
-  ...args: (string | number | object | FastDefinition | Apa)[]
-) {
+export function Println(...args: (string | number | object | MWDTYPE)[]) {
   const colorMap: { [key: string]: string } = {
     r: "\x1b[1;31m", // Bold Red
     g: "\x1b[1;32m", // Bold Green

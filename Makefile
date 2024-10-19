@@ -6,7 +6,6 @@ BLUE = \033[34m
 RED = \033[31m
 
 # Define project constants
-DENO_FLAGS = task dev
 LOCK_FILE = deno.lock
 DEPS_FILE = deps.ts
 # Settings for testing dict func
@@ -30,7 +29,7 @@ help:
 .PHONY: run
 run:
 	@echo -e "${YELLOW}Running the Deno project...${RESET}"
-	@deno run $(DENO_FLAGS) main.ts
+	@deno task dev
 	@echo -e "${GREEN}Project ran successfully!${RESET}"
 
 # Format the code

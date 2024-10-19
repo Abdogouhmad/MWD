@@ -2,8 +2,10 @@
 
 ## Overview
 
-This project is a REST API built with Deno 2.0 that aims to clean the dataset of the Merriam-Webster dictionary.
-The API extracts relevant definitions and pronunciations for given words, providing a standardized format for easy consumption by applications.
+This project is a REST API built with Deno 2.0 that aims to clean the dataset of
+the Merriam-Webster dictionary. The API extracts relevant definitions and
+pronunciations for given words, providing a standardized format for easy
+consumption by applications.
 
 ## Features
 

@@ -1,17 +1,13 @@
-import { Context, Router } from "./deps.ts";
+import { Context, Router } from "./deps.ts"; // Importing Context and Router
 import { define } from "./controller/userController.ts";
-// import { Println } from "./utils/print.ts";
 
 const router = new Router();
 
-
 router
-  .get(`/define/:word`, async (ctx: Context) => {
+  .get(`/define/:word`, async (ctx: Context & { params: { word: string } }) => {
     try {
-      const word: string = ctx.params.word!;
+      const word: string = ctx.params.word!; // Assert that word is present
       await define(ctx, word);
-      // Println("<g>you api works: </>", word)
-      // console.log("")
     } catch (err) {
       console.error("Error occurred:", err);
       ctx.response.status = 500;

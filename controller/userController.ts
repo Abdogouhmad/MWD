@@ -30,16 +30,13 @@ export async function define(ctx: Context, word: string) {
   }
 
   // Destructure DEFINE and APA from the cleaned data
-  const { DEFINE, APA } = cleanedData;
+  // const { DEFINE, APA } = cleanedData;
 
   // Send the response with the fetched definition and APA data
   return NewResponse(
     ctx,
     200,
     `Definitions and pronunciations for the word: ${word}`,
-    {
-      DEFINE, // Include the fast definitions
-      APA, // Include the APA pronunciations
-    },
+    cleanedData,
   );
 }

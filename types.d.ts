@@ -16,27 +16,17 @@ interface ApaType {
   altprs?: { ipa: string }[]; // alternative pronunciation, optional
 }
 
+// main interface
 interface MWDTYPE {
   meta: MetaType;
   hwi: ApaType;
 }
 
-
-// Define the return type for the clean function
-export interface CleanFuncReturn {
-  DEFINE: MetaType[] | undefined;
-  APA: ApaType[] | undefined;
-}
-
-export type PronunciationEntry = {
-  hwi?: {
-    hw?: string;
-    prs?: { ipa: string, sound: string }[];
-    altprs?: { ipa: string }[];
-  };
+// Define the structure for combined result
+type CombinedResult = {
+  definition?: MetaType;
+  apa?: ApaType;
 };
-
-
 
 // Meta type
 export interface Meta {
@@ -61,21 +51,21 @@ export interface InflectionsObject {
 
 // PronunciationsObject
 export interface PronunciationsObject {
-  mw?: string;            // Written pronunciation in Merriam-Webster format (optional)
-  l?: string;             // Pronunciation label before pronunciation (optional)
-  l2?: string;            // Pronunciation label after pronunciation (optional)
-  pun?: string;           // Punctuation to separate pronunciation objects (optional)
+  mw?: string; // Written pronunciation in Merriam-Webster format (optional)
+  l?: string; // Pronunciation label before pronunciation (optional)
+  l2?: string; // Pronunciation label after pronunciation (optional)
+  pun?: string; // Punctuation to separate pronunciation objects (optional)
   sound?: {
-    audio: string;      // Base filename for audio playback
-    ref?: string;       // Can be ignored
-    stat?: string;      // Can be ignored
-  };                      // Audio playback information (optional)
+    audio: string; // Base filename for audio playback
+    ref?: string; // Can be ignored
+    stat?: string; // Can be ignored
+  }; // Audio playback information (optional)
 }
 
 // DiSense
 export interface DiSenseObject {
-  sd?: string,
-  dt?: string[]
+  sd?: string;
+  dt?: string[];
 }
 // Define the structure for verbal illustrations
 interface VerbalIllustration {
@@ -96,17 +86,17 @@ export type DefinitionType =
 // SenseEntery
 export interface SenseEntry {
   // Etymology
-  et?: string[],
+  et?: string[];
   // Inflections
-  ins?: InflectionsObject,
+  ins?: InflectionsObject;
   // Pronunciations
-  prs?: PronunciationsObject
+  prs?: PronunciationsObject;
   // Divided Sense
-  sdsense?: DiSenseObject,
+  sdsense?: DiSenseObject;
   // Sense-Specific Grammatical Label
-  sgram?: string,
+  sgram?: string;
   // Subject/Status Labels
-  sls?: string[],
+  sls?: string[];
   // define text
   dt: DefinitionType[];
 }
