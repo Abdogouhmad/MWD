@@ -58,3 +58,57 @@ export async function CleanDefinition(
     NewResponse(ctx, 500, `Couldn't fetch the API: ${(e as Error).message}`);
   }
 }
+
+
+
+/**
+ * Function that returns dummy data for testing purposes.
+ *
+ * @returns {Promise<CombinedResult[]>} - An array containing both the fast definitions and the APA pronunciations.
+ */
+export async function ExampleData(): Promise<CombinedResult[]> {
+  // Define a small dataset to mock the killData
+  const killData = {
+    data: [
+      {
+        meta: {
+          stems: ["kill"],
+          "app-shortdef": {
+            hw: "kill",
+            fl: "verb",
+            def: ["to cause the death of a living thing"],
+          },
+        },
+        hwi: {
+          hw: "kill",
+          prs: [{ ipa: "kɪl", sound: { audio: "kill01" } }],
+          altprs: [{ ipa: "kɪl" }],
+        },
+      },
+      {
+        meta: {
+          stems: ["killing"],
+          "app-shortdef": {
+            hw: "killing",
+            fl: "noun",
+            def: ["the act of causing death"],
+          },
+        },
+        hwi: {
+          hw: "killing",
+          prs: [{ ipa: "ˈkɪlɪŋ", sound: { audio: "killing01" } }],
+        },
+      },
+    ],
+  };
+
+  // Use the WordDictionary class to extract definitions and pronunciations
+  const CData = new WordDictionary(killData.data);
+  const dictionary = CData.GetWordData("kill");
+
+  // Optionally, you can print or log the result for debugging purposes
+  CData.PrintResults("kill", dictionary);
+
+  // Return the cleaned data
+  return dictionary;
+}

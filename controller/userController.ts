@@ -1,5 +1,5 @@
 import { Context } from "../deps.ts";
-import { CleanDefinition } from "../service/userService.ts";
+import { CleanDefinition, ExampleData } from "../service/userService.ts";
 import { NewResponse } from "../utils/responseHandler.ts";
 
 /**
@@ -38,5 +38,20 @@ export async function define(ctx: Context, word: string) {
     200,
     `Definitions and pronunciations for the word: ${word}`,
     cleanedData,
+  );
+}
+
+
+export async function exampledef(ctx: Context) {
+  const result = await ExampleData();
+
+  if (!result) return NewResponse(ctx, 500, 'Error example');
+
+
+  return NewResponse(
+    ctx,
+    200,
+    `Example is working`,
+    result,
   );
 }

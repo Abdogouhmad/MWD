@@ -96,7 +96,7 @@ export class WordDictionary {
    * @param {string} word - The word being printed.
    * @param {CombinedResult[]} data - The combined result data (definitions and APA).
    */
-  public PrintCombinedResults(word: string, data: CombinedResult[]): void {
+  public PrintResults(word: string, data: CombinedResult[]): void {
     if (data.length > 0) {
       Println(`<r>Results for "${word}":</>`, data);
     } else {

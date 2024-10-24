@@ -1,5 +1,5 @@
 import { Context, Router } from "./deps.ts"; // Importing Context and Router
-import { define } from "./controller/userController.ts";
+import { define, exampledef } from "./controller/userController.ts";
 
 const router = new Router();
 
@@ -14,8 +14,13 @@ router
       ctx.response.body = { message: "Internal Server Error" };
     }
   })
-  .get("/api/v1/example", () => {
-    throw new Error("Something went wrong"); // This will be caught by the ErrorHandler middleware
+  .get("/example", async (ctx: Context) => {
+    try {
+      exampledef(ctx);
+    } catch (e) {
+      ctx.response.status = 500;
+      ctx.response.body = { message: "Internal Server Error" };
+    }
   });
 
 export default router;

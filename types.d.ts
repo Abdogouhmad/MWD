@@ -38,8 +38,6 @@ export interface Meta {
   };
 }
 
-// Def entery
-
 // InflectionsObject
 export interface InflectionsObject {
   if?: string; // Fully spelled-out inflection (optional)
