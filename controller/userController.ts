@@ -41,12 +41,10 @@ export async function define(ctx: Context, word: string) {
   );
 }
 
-
 export async function exampledef(ctx: Context) {
   const result = await ExampleData();
 
-  if (!result) return NewResponse(ctx, 500, 'Error example');
-
+  if (!result) return NewResponse(ctx, 500, "Error example");
 
   return NewResponse(
     ctx,

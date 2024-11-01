@@ -59,8 +59,6 @@ export async function CleanDefinition(
   }
 }
 
-
-
 /**
  * Function that returns dummy data for testing purposes.
  *

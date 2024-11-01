@@ -25,7 +25,7 @@ interface MWDTYPE {
 // Define the structure for combined result
 type CombinedResult = {
   definition?: MetaType;
-  apa?: ApaType;
+  ipa?: ApaType;
 };
 
 // Meta type

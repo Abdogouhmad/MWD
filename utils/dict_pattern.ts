@@ -35,10 +35,10 @@ export class WordDictionary {
           const definition = this.extractDefinition(entry.meta);
 
           // Extract APA data
-          const apa = this.extractAPA(entry.hwi);
+          const ipa = this.extractAPA(entry.hwi);
 
-          if (definition || apa) {
-            results.push({ definition, apa });
+          if (definition || ipa) {
+            results.push({ definition, ipa });
           }
         }
       }
